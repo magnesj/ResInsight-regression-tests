@@ -8,6 +8,7 @@ Usage: python build_projects.py --testmodels <path to TestModels> [--cases <rege
 """
 
 import argparse
+import json
 import re
 import sys
 import traceback
@@ -26,6 +27,9 @@ def build_case(resinsight, name, testmodels):
     folder.mkdir(parents=True, exist_ok=True)
     rsp = folder / "RegressionTest.rsp"
     rsp.unlink(missing_ok=True)
+    description = (build.__doc__ or "").strip()
+    meta = {"description": description, "model": model}
+    (folder / "meta.json").write_text(json.dumps(meta, indent=2) + "\n")
 
     project = resinsight.project
     project.close()

@@ -10,3 +10,4 @@ report/
 testmodels/
 __pycache__/
 .pytest_cache/
+cases/*/meta.json

@@ -146,47 +146,55 @@ def _box_center(case):
 
 @feature("grid_default")
 def grid_default(project, case, view, testmodels):
+    """Unmodified default 3D view of the SPE1 grid."""
     pass
 
 
 @feature("background_color")
 def background_color(project, case, view, testmodels):
+    """View background color set to #3388AA."""
     view.background_color = "#3388AA"
     view.update()
 
 
 @feature("grid_box_hidden")
 def grid_box_hidden(project, case, view, testmodels):
+    """Grid box (axes) hidden with show_grid_box = False."""
     view.show_grid_box = False
     view.update()
 
 
 @feature("z_scale")
 def z_scale(project, case, view, testmodels):
+    """Z scale set to 1 instead of the default 5."""
     view.grid_z_scale = Z_SCALE
     view.update()
 
 
 @feature("disable_lighting")
 def disable_lighting(project, case, view, testmodels):
+    """Lighting disabled with disable_lighting = True."""
     view.disable_lighting = True
     view.update()
 
 
 @feature("cell_result_dynamic", TEST10K)
 def cell_result_dynamic(project, case, view, testmodels):
+    """Dynamic cell result PRESSURE on the first time step."""
     view.apply_cell_result("DYNAMIC_NATIVE", "PRESSURE")
     view.update()
 
 
 @feature("cell_result_static", TEST10K)
 def cell_result_static(project, case, view, testmodels):
+    """Static cell result PORO."""
     view.apply_cell_result("STATIC_NATIVE", "PORO")
     view.update()
 
 
 @feature("time_step", TEST10K)
 def time_step(project, case, view, testmodels):
+    """PRESSURE shown at time step 3 (current_time_step)."""
     view.apply_cell_result("DYNAMIC_NATIVE", "PRESSURE")
     view.current_time_step = 3
     view.update()
@@ -194,6 +202,7 @@ def time_step(project, case, view, testmodels):
 
 @feature("intersection_polyline", TEST10K)
 def intersection_polyline(project, case, view, testmodels):
+    """Polyline intersection through the middle of the grid, oblique camera."""
     _show_pressure(view)
     x, y, z, bbox = _box_center(case)
     collection = view.descendants(rips.IntersectionCollection)[0]
@@ -210,6 +219,7 @@ def intersection_polyline(project, case, view, testmodels):
 
 @feature("regular_surface", TEST10K)
 def regular_surface(project, case, view, testmodels):
+    """Regular surface covering the central half of the grid, oblique camera."""
     _show_pressure(view)
     x, y, z, bbox = _box_center(case)
     nx, ny = 50, 50
@@ -232,6 +242,7 @@ def regular_surface(project, case, view, testmodels):
 
 @feature("polygon", TEST10K)
 def polygon(project, case, view, testmodels):
+    """Red polygon outlining the grid bounding box."""
     _show_pressure(view)
     x, y, z, bbox = _box_center(case)
     coordinates = [
@@ -251,6 +262,7 @@ def polygon(project, case, view, testmodels):
 
 @feature("well_path_import", TEST10K)
 def well_path_import(project, case, view, testmodels):
+    """Well path imported from a .dev file with a well path intersection, oblique camera."""
     _show_pressure(view)
     project.import_well_paths([str(testmodels / TEST10K_WELLPATH)])
     well_path = project.well_paths()[0]
@@ -260,6 +272,7 @@ def well_path_import(project, case, view, testmodels):
 
 @feature("modeled_well_path", TEST10K)
 def modeled_well_path(project, case, view, testmodels):
+    """Modeled well path with three targets; grid hidden with a cell range filter."""
     _show_pressure(view)
     collection = project.well_path_collection()
     well_path = collection.add_new_object(rips.ModeledWellPath)
@@ -283,6 +296,7 @@ def modeled_well_path(project, case, view, testmodels):
 
 @feature("well_path_from_points", TEST10K)
 def well_path_from_points(project, case, view, testmodels):
+    """Well path imported from a list of points; grid hidden with a cell range filter."""
     _show_pressure(view)
     collection = project.well_path_collection()
     points = [
