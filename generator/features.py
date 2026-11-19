@@ -44,10 +44,11 @@ def _look_at(view, target, direction, distance):
         y[0] * z[1] - y[1] * z[0],
     ]
     eye = [t - c * distance for t, c in zip(target, d)]
+    # The camera matrix is a row-major view matrix (world to camera)
     view.camera_matrix = [
-        x[0], y[0], z[0], eye[0],
-        x[1], y[1], z[1], eye[1],
-        x[2], y[2], z[2], eye[2],
+        x[0], x[1], x[2], -sum(a * b for a, b in zip(x, eye)),
+        y[0], y[1], y[2], -sum(a * b for a, b in zip(y, eye)),
+        z[0], z[1], z[2], -sum(a * b for a, b in zip(z, eye)),
         0.0, 0.0, 0.0, 1.0,
     ]
     view.camera_point_of_interest = list(target)
