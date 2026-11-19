@@ -32,13 +32,15 @@ jobs:
           cat run-artifacts/*/run.log >/dev/null 2>&1 || true
 
       - name: Copy generated images into references
+        env:
+          CASE_FILTER: ${{ inputs.case_filter }}
         run: |
           set -e
           sha=$(ls run-artifacts | sed -n 's/^regression-//p' | head -n1)
           echo "SOURCE_SHA=$sha" >> "$GITHUB_ENV"
           for gen in run-artifacts/*/cases/*/RegTestGeneratedImages; do
             name=$(basename "$(dirname "$gen")")
-            if [ -n "${{ inputs.case_filter }}" ] && ! [[ "$name" =~ ${{ inputs.case_filter }} ]]; then
+            if [ -n "$CASE_FILTER" ] && ! [[ "$name" =~ $CASE_FILTER ]]; then
               continue
             fi
             [ -d "cases/$name" ] || continue
