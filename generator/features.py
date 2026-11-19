@@ -25,6 +25,12 @@ def feature(name, model=SPE1):
     return register
 
 
+def _show_pressure(view):
+    # SOIL is zero at the first time step and shows nothing
+    view.apply_cell_result("DYNAMIC_NATIVE", "PRESSURE")
+    view.update()
+
+
 def _box_center(case):
     bbox = case.reservoir_boundingbox()
     return (
@@ -54,8 +60,7 @@ def grid_box_hidden(project, case, view, testmodels):
 
 @feature("z_scale")
 def z_scale(project, case, view, testmodels):
-    view.grid_z_scale = 5.0
-    view.show_z_scale = True
+    view.grid_z_scale = 1.0
     view.update()
 
 
@@ -79,22 +84,14 @@ def cell_result_static(project, case, view, testmodels):
 
 @feature("time_step", TEST10K)
 def time_step(project, case, view, testmodels):
-    view.apply_cell_result("DYNAMIC_NATIVE", "SOIL")
-    view.set_time_step(2)
+    view.apply_cell_result("DYNAMIC_NATIVE", "PRESSURE")
+    view.current_time_step = 3
     view.update()
-
-
-@feature("cloned_view", TEST10K)
-def cloned_view(project, case, view, testmodels):
-    view.apply_cell_result("DYNAMIC_NATIVE", "SWAT")
-    view.update()
-    clone = view.clone()
-    clone.background_color = "#FFAA33"
-    clone.update()
 
 
 @feature("intersection_polyline", TEST10K)
 def intersection_polyline(project, case, view, testmodels):
+    _show_pressure(view)
     x, y, z, bbox = _box_center(case)
     collection = view.descendants(rips.IntersectionCollection)[0]
     intersection = collection.add_new_object(rips.CurveIntersection)
@@ -109,18 +106,19 @@ def intersection_polyline(project, case, view, testmodels):
 
 @feature("regular_surface", TEST10K)
 def regular_surface(project, case, view, testmodels):
+    _show_pressure(view)
     x, y, z, bbox = _box_center(case)
     nx, ny = 50, 50
     collection = project.descendants(rips.SurfaceCollection)[0]
     surface = collection.new_regular_surface(
         name="Wave surface",
-        origin_x=bbox.min_x,
-        origin_y=bbox.min_y,
+        origin_x=bbox.min_x + (bbox.max_x - bbox.min_x) / 4,
+        origin_y=bbox.min_y + (bbox.max_y - bbox.min_y) / 4,
         depth=z,
         nx=nx,
         ny=ny,
-        increment_x=(bbox.max_x - bbox.min_x) / nx,
-        increment_y=(bbox.max_y - bbox.min_y) / ny,
+        increment_x=(bbox.max_x - bbox.min_x) / 2 / nx,
+        increment_y=(bbox.max_y - bbox.min_y) / 2 / ny,
     )
     surface.rotation = 0.0
     surface.update()
@@ -129,6 +127,7 @@ def regular_surface(project, case, view, testmodels):
 
 @feature("polygon", TEST10K)
 def polygon(project, case, view, testmodels):
+    _show_pressure(view)
     x, y, z, bbox = _box_center(case)
     coordinates = [
         [bbox.min_x, bbox.min_y, z],
@@ -147,11 +146,13 @@ def polygon(project, case, view, testmodels):
 
 @feature("well_path_import", TEST10K)
 def well_path_import(project, case, view, testmodels):
+    _show_pressure(view)
     project.import_well_paths([str(testmodels / TEST10K_WELLPATH)])
 
 
 @feature("modeled_well_path", TEST10K)
 def modeled_well_path(project, case, view, testmodels):
+    _show_pressure(view)
     collection = project.well_path_collection()
     well_path = collection.add_new_object(rips.ModeledWellPath)
     well_path.name = "Modeled well"
@@ -168,6 +169,7 @@ def modeled_well_path(project, case, view, testmodels):
 
 @feature("well_path_from_points", TEST10K)
 def well_path_from_points(project, case, view, testmodels):
+    _show_pressure(view)
     collection = project.well_path_collection()
     points = [
         [3736.0 + 30 * i, 4630.0 + 20 * i, -4130.0 - 10 * i + math.sin(i) * 5]
