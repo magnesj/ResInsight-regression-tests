@@ -326,8 +326,8 @@ def summary_plot(project, case, view, testmodels):
     collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
     _fit_multi_plots(project, rips.NumberOfColumns._1, rips.RowsPerPage._1)
     for d in project.descendants(rips.PdmObjectBase):
-        print("DBG", type(d).__name__, d.pb2_object.class_keyword)
-        if "Curve" in d.pb2_object.class_keyword or "Axis" in d.pb2_object.class_keyword:
+        print("DBG", type(d).__name__, d.pb2_object.class_keyword())
+        if "Curve" in d.pb2_object.class_keyword() or "Axis" in d.pb2_object.class_keyword():
             d.print_object_info()
 
 
