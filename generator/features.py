@@ -33,6 +33,8 @@ def _show_pressure(view):
 
 def _look_at(view, target, direction, distance):
     """Point the camera at target, looking along direction with world Z as up."""
+    # Camera coordinates are in scaled display space, so keep z unscaled
+    view.grid_z_scale = 1.0
     d = _normalize(direction)
     up = (0.0, 0.0, 1.0) if abs(d[2]) < 0.99 else (0.0, 1.0, 0.0)
     dot = sum(u * c for u, c in zip(up, d))
