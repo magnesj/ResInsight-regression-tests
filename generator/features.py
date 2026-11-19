@@ -321,7 +321,6 @@ def _fit_multi_plots(project, columns, rows):
             print("DBG", item.pb2_object().class_keyword)
         if item.pb2_object().class_keyword == "SummaryTimeAxisProperties":
             item.set_value("auto_zoom", True)
-            item.update()
 
 
 @feature("summary_plot")
