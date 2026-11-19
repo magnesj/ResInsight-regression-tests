@@ -255,7 +255,7 @@ def well_path_import(project, case, view, testmodels):
     project.import_well_paths([str(testmodels / TEST10K_WELLPATH)])
     well_path = project.well_paths()[0]
     _intersect_well(view, well_path)
-    _look_at_points(view, case, _read_dev_points(testmodels / TEST10K_WELLPATH), margin=1.0)
+    _look_at_points(view, case, _read_dev_points(testmodels / TEST10K_WELLPATH), margin=2.5)
 
 
 @feature("modeled_well_path", TEST10K)
