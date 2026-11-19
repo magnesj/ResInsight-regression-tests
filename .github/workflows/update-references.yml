@@ -43,7 +43,6 @@ jobs:
             if [ -n "$CASE_FILTER" ] && ! [[ "$name" =~ $CASE_FILTER ]]; then
               continue
             fi
-            [ -d "cases/$name" ] || continue
             rm -rf "cases/$name/RegTestBaseImages"
             mkdir -p "cases/$name/RegTestBaseImages"
             cp "$gen"/*.png "cases/$name/RegTestBaseImages/"
