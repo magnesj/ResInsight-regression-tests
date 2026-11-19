@@ -31,10 +31,13 @@ def _show_pressure(view):
     view.update()
 
 
+Z_SCALE = 5.0
+
+
 def _look_at(view, target, direction, distance):
     """Point the camera at target, looking along direction with world Z as up."""
-    # Camera coordinates are in scaled display space, so keep z unscaled
-    view.grid_z_scale = 1.0
+    # Camera coordinates are in scaled display space
+    view.grid_z_scale = Z_SCALE
     d = _normalize(direction)
     up = (0.0, 0.0, 1.0) if abs(d[2]) < 0.99 else (0.0, 1.0, 0.0)
     dot = sum(u * c for u, c in zip(up, d))
@@ -69,9 +72,11 @@ def _look_at_points(view, case, points, direction=(0.0, 1.0, -0.6), margin=2.5):
     target = (
         (min(xs) + max(xs)) / 2 - cx,
         (min(ys) + max(ys)) / 2 - cy,
-        (min(zs) + max(zs)) / 2 - cz,
+        ((min(zs) + max(zs)) / 2 - cz) * Z_SCALE,
     )
-    extent = math.dist((min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs)))
+    extent = math.dist(
+        (min(xs), min(ys), min(zs) * Z_SCALE), (max(xs), max(ys), max(zs) * Z_SCALE)
+    )
     _look_at(view, target, direction, max(extent, 100.0) * margin)
 
 
@@ -134,7 +139,7 @@ def grid_box_hidden(project, case, view, testmodels):
 
 @feature("z_scale")
 def z_scale(project, case, view, testmodels):
-    view.grid_z_scale = 1.0
+    view.grid_z_scale = Z_SCALE
     view.update()
 
 
@@ -225,7 +230,6 @@ def well_path_import(project, case, view, testmodels):
     _show_pressure(view)
     project.import_well_paths([str(testmodels / TEST10K_WELLPATH)])
     well_path = project.well_paths()[0]
-    _hide_grid(view)
     _intersect_well(view, well_path)
     _look_at_grid(view, case)
 
