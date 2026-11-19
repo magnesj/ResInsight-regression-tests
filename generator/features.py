@@ -59,12 +59,6 @@ def z_scale(project, case, view, testmodels):
     view.update()
 
 
-@feature("orthographic_projection")
-def orthographic_projection(project, case, view, testmodels):
-    view.perspective_projection = False
-    view.update()
-
-
 @feature("disable_lighting")
 def disable_lighting(project, case, view, testmodels):
     view.disable_lighting = True
