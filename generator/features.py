@@ -67,8 +67,9 @@ def _normalize(v):
 
 def _look_at_points(view, case, points, direction=(0.0, 1.0, -0.6), margin=2.5):
     xs, ys, zs = zip(*points)
-    # Camera coordinates are relative to the center of the grid bounding box
-    cx, cy, cz, _ = _box_center(case)
+    # Camera coordinates are relative to the display model offset
+    bbox = case.reservoir_boundingbox()
+    cx, cy, cz = bbox.min_x, bbox.min_y, bbox.min_z
     target = (
         (min(xs) + max(xs)) / 2 - cx,
         (min(ys) + max(ys)) / 2 - cy,
