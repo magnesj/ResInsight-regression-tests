@@ -315,7 +315,10 @@ def summary_plot(project, case, view, testmodels):
     view.delete()  # only the plot should be snapshotted
     summary_case = project.import_summary_case(str(testmodels / SUMMARY))
     collection = project.summary_plot_collection()
-    collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
+    plot = collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
+    curves = plot.descendants(rips.SummaryCurve)
+    print("DEBUG curves", len(curves), [vars(c) for c in curves][:1])
+    plot.update()
 
 
 @feature("summary_multi_plot")
