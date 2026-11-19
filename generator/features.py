@@ -255,7 +255,7 @@ def well_path_import(project, case, view, testmodels):
     project.import_well_paths([str(testmodels / TEST10K_WELLPATH)])
     well_path = project.well_paths()[0]
     _intersect_well(view, well_path)
-    _look_at_points(view, case, _read_dev_points(testmodels / TEST10K_WELLPATH), margin=1.5)
+    _look_at_points(view, case, _read_dev_points(testmodels / TEST10K_WELLPATH), margin=1.0)
 
 
 @feature("modeled_well_path", TEST10K)
@@ -269,12 +269,16 @@ def modeled_well_path(project, case, view, testmodels):
     reference = geometry.reference_point
     reference[0], reference[1], reference[2] = 3736.27, 4630.61, 4133.5
     geometry.update()
-    geometry.append_well_target([0, 0, 0])
-    geometry.append_well_target([300, 200, 50])
-    geometry.append_well_target([600, 400, 120])
+    targets = [[0, 0, 0], [300, 200, 50], [600, 400, 120]]
+    for target in targets:
+        geometry.append_well_target(target)
     geometry.update()
     _hide_grid(view)
-    _look_at_points(view, case, _read_dev_points(testmodels / TEST10K_WELLPATH), margin=1.5)
+    points = [
+        (reference[0] + dx, reference[1] + dy, -(reference[2] + dz))
+        for dx, dy, dz in targets
+    ]
+    _look_at_points(view, case, points, margin=1.5)
 
 
 @feature("well_path_from_points", TEST10K)
