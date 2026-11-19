@@ -317,6 +317,8 @@ def _fit_multi_plots(project, columns, rows):
         multi_plot.update()
     # The hidden plot widget disables auto zoom of the time axis while it is laid out, which leaves an empty time range
     for item in project.descendants(rips.PdmObjectBase):
+        if "Axis" in item.pb2_object().class_keyword:
+            print("DBG", item.pb2_object().class_keyword)
         if item.pb2_object().class_keyword == "SummaryTimeAxisProperties":
             item.set_value("auto_zoom", True)
             item.update()
