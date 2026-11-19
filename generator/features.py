@@ -313,18 +313,17 @@ def well_path_from_points(project, case, view, testmodels):
 def summary_plot(project, case, view, testmodels):
     """Summary plot of the field oil production total (FOPT)."""
     view.delete()  # only the plot should be snapshotted
-    summary_case = project.import_summary_case(str(testmodels / SUMMARY))
+    summary_case = project.import_summary_case(str(testmodels / "dualporo-testcase/DUALPORO-WELL-COMPLETION-DEFAULT.SMSPEC"))
     collection = project.summary_plot_collection()
     plot = collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
     plot.update()
-    plot.export_snapshot(export_folder="/tmp/dbg", prefix="rips_", width=1000, height=745)
 
 
 @feature("summary_multi_plot")
 def summary_multi_plot(project, case, view, testmodels):
     """Multi plot with one summary plot per vector (FOPT, FWPT)."""
     view.delete()  # only the plot should be snapshotted
-    summary_case = project.import_summary_case(str(testmodels / SUMMARY))
+    summary_case = project.import_summary_case(str(testmodels / "msw-export/opm-simulation-reference/BASE_MODEL_1.SMSPEC"))
     collection = project.summary_plot_collection()
     collection.new_summary_multi_plot(
         summary_cases=[summary_case], addresses=["FOPT", "FWPT"]
