@@ -328,7 +328,7 @@ def summary_plot(project, case, view, testmodels):
     for d in project.descendants(rips.PdmObjectBase):
         print("DBG", type(d).__name__, d.pb2_object().class_keyword)
         if "Curve" in d.pb2_object().class_keyword or "Axis" in d.pb2_object().class_keyword:
-            d.print_object_info()
+            print("DBGP", dict(d.pb2_object().parameters))
 
 
 @feature("summary_multi_plot")
