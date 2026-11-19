@@ -62,19 +62,26 @@ def _normalize(v):
     return [c / length for c in v]
 
 
-def _look_at_points(view, points, direction=(0.0, 1.0, -0.6), margin=2.5):
+def _look_at_points(view, case, points, direction=(0.0, 1.0, -0.6), margin=2.5):
     xs, ys, zs = zip(*points)
-    target = ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (min(zs) + max(zs)) / 2)
+    # Camera coordinates are relative to the center of the grid bounding box
+    cx, cy, cz, _ = _box_center(case)
+    target = (
+        (min(xs) + max(xs)) / 2 - cx,
+        (min(ys) + max(ys)) / 2 - cy,
+        (min(zs) + max(zs)) / 2 - cz,
+    )
     extent = math.dist((min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs)))
     _look_at(view, target, direction, max(extent, 100.0) * margin)
 
 
-def _look_at_grid(view, bbox, direction=(0.0, 1.0, -0.6)):
+def _look_at_grid(view, case, direction=(0.0, 1.0, -0.6)):
+    bbox = case.reservoir_boundingbox()
     corners = [
         (bbox.min_x, bbox.min_y, bbox.min_z),
         (bbox.max_x, bbox.max_y, bbox.max_z),
     ]
-    _look_at_points(view, corners, direction, margin=1.4)
+    _look_at_points(view, case, corners, direction, margin=1.4)
 
 
 def _hide_grid(view):
@@ -169,7 +176,7 @@ def intersection_polyline(project, case, view, testmodels):
         [bbox.max_x, bbox.max_y, z],
     ]
     intersection.update()
-    _look_at_grid(view, bbox, (0.3, 1.0, -0.5))
+    _look_at_grid(view, case, (0.3, 1.0, -0.5))
 
 
 @feature("regular_surface", TEST10K)
@@ -191,7 +198,7 @@ def regular_surface(project, case, view, testmodels):
     surface.rotation = 0.0
     surface.update()
     view.set_surface_visible(surface, True)
-    _look_at_grid(view, bbox)
+    _look_at_grid(view, case)
 
 
 @feature("polygon", TEST10K)
@@ -220,7 +227,7 @@ def well_path_import(project, case, view, testmodels):
     well_path = project.well_paths()[0]
     _hide_grid(view)
     _intersect_well(view, well_path)
-    _look_at_grid(view, case.reservoir_boundingbox())
+    _look_at_grid(view, case)
 
 
 @feature("modeled_well_path", TEST10K)
@@ -240,7 +247,7 @@ def modeled_well_path(project, case, view, testmodels):
     geometry.update()
     _hide_grid(view)
     _intersect_well(view, well_path)
-    _look_at_grid(view, case.reservoir_boundingbox())
+    _look_at_grid(view, case)
 
 
 @feature("well_path_from_points", TEST10K)
@@ -256,4 +263,4 @@ def well_path_from_points(project, case, view, testmodels):
     )
     _hide_grid(view)
     _intersect_well(view, well_path)
-    _look_at_points(view, points)
+    _look_at_points(view, case, points)
