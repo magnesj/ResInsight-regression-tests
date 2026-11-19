@@ -71,9 +71,8 @@ def _display_offset(case):
     centers = case.grid(0).cell_centers()
     xs = [c.x for c in centers]
     ys = [c.y for c in centers]
-    zs = [c.z for c in centers]
-    print("DEBUG centers", len(xs), min(xs), max(xs), min(ys), max(ys), min(zs), max(zs))
-    print("DEBUG active", case.reservoir_boundingbox())
+    # Cell centers report depth, while the scene uses negative depth as z
+    zs = [-c.z for c in centers]
     return (
         (min(xs) + max(xs)) / 2,
         (min(ys) + max(ys)) / 2,
