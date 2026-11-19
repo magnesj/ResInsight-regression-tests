@@ -65,11 +65,23 @@ def _normalize(v):
     return [c / length for c in v]
 
 
+def _display_offset(case):
+    # Camera coordinates are relative to the center of the main grid, which is
+    # larger than the active cell bounding box
+    centers = case.grid(0).cell_centers()
+    xs = [c.x for c in centers]
+    ys = [c.y for c in centers]
+    zs = [c.z for c in centers]
+    return (
+        (min(xs) + max(xs)) / 2,
+        (min(ys) + max(ys)) / 2,
+        (min(zs) + max(zs)) / 2,
+    )
+
+
 def _look_at_points(view, case, points, direction=(0.0, 1.0, -0.6), margin=2.5):
     xs, ys, zs = zip(*points)
-    # Camera coordinates are relative to the display model offset
-    bbox = case.reservoir_boundingbox()
-    cx, cy, cz = bbox.min_x, bbox.min_y, bbox.min_z
+    cx, cy, cz = _display_offset(case)
     target = (
         (min(xs) + max(xs)) / 2 - cx,
         (min(ys) + max(ys)) / 2 - cy,
