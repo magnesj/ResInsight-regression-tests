@@ -1,4 +1,4 @@
-"""Step 2: build cases/TestCase_<id>/RegressionTest.rsp from params.json using rips.
+"""Build cases/TestCase_<feature>/RegressionTest.rsp for every feature in features.py.
 
 Requires the rips wheel matching the ResInsight binary and RESINSIGHT_EXECUTABLE.
 The .rsp files embed absolute TestModels paths, so they are generated before each
@@ -8,28 +8,31 @@ Usage: python build_projects.py --testmodels <path to TestModels> [--cases <rege
 """
 
 import argparse
-import json
 import re
+import sys
+import traceback
 from pathlib import Path
 
 import rips
 
+from features import FEATURES
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def build_case(resinsight, folder, testmodels):
-    params = json.loads((folder / "params.json").read_text())["parameters"]
+def build_case(resinsight, name, testmodels):
+    build, model = FEATURES[name]
+    folder = ROOT / "cases" / f"TestCase_{name}"
+    folder.mkdir(parents=True, exist_ok=True)
+    rsp = folder / "RegressionTest.rsp"
+    rsp.unlink(missing_ok=True)
+
     project = resinsight.project
     project.close()
-
-    case = project.load_case(str(testmodels / params["model"]))
+    case = project.load_case(str(testmodels / model))
     view = case.create_view()
-    if params["result"] != "none":
-        view.apply_cell_result("DYNAMIC_NATIVE", params["result"])
-    view.show_grid_box = bool(params["grid_box"])
-    view.update()
-
-    project.save(str(folder / "RegressionTest.rsp"))
+    build(project, case, view, testmodels)
+    project.save(str(rsp))
 
 
 def main():
@@ -40,17 +43,25 @@ def main():
 
     testmodels = args.testmodels.resolve()
     pattern = re.compile(args.cases)
-    folders = sorted(
-        f for f in (ROOT / "cases").glob("TestCase_*") if pattern.search(f.name)
-    )
+    names = sorted(n for n in FEATURES if pattern.search(f"TestCase_{n}"))
 
+    failed = []
     resinsight = rips.Instance.launch(console=True)
     try:
-        for folder in folders:
-            build_case(resinsight, folder, testmodels)
-            print(f"built {folder.name}")
+        for name in names:
+            try:
+                build_case(resinsight, name, testmodels)
+                print(f"built {name}")
+            except Exception:
+                failed.append(name)
+                print(f"FAILED to build {name}", file=sys.stderr)
+                traceback.print_exc()
     finally:
         resinsight.exit()
+
+    if failed:
+        print(f"::error::Could not build features: {', '.join(failed)}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

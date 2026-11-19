@@ -9,9 +9,8 @@ See magnesj/ResInsight#1190.
 
 | Path | Content |
 | --- | --- |
-| `generator/config.yaml` | Parameter model and exclusion rules |
-| `generator/plan.py` | Expands the model to pairwise cases: `cases/TestCase_<hash>/params.json` (committed) |
-| `generator/build_projects.py` | Builds `RegressionTest.rsp` per case with `rips` (generated, not committed) |
+| `generator/features.py` | One function per rips feature; each builds a small project on the smallest suitable model |
+| `generator/build_projects.py` | Runs every feature and writes `cases/TestCase_<feature>/RegressionTest.rsp` (generated, not committed) |
 | `cases/TestCase_*/RegTestBaseImages/` | Reference images (Git LFS) |
 | `scripts/` | Binary download, test run, exact compare, HTML report |
 | `fonts/DroidSans.ttf` | Regression font picked up by ResInsight's runner |
@@ -22,12 +21,13 @@ from `OPM/ResInsight` at the same SHA as the tested binary.
 
 ## Adding or changing cases
 
-1. Edit `generator/config.yaml` (add values or `exclude` rules).
-2. `pip install pyyaml pytest && cd generator && python plan.py && python -m pytest`
-3. Commit the changed `cases/*/params.json`. New cases have no references yet; the first
-   nightly run reports `missing_base`. Promote them with the reference update workflow.
+1. Add a function decorated with `@feature(name, model)` in `generator/features.py`. Each feature
+   covers one rips capability once; do not repeat it on other grids.
+2. Run the nightly workflow (`force`). A new feature has no references yet, so it is reported
+   as `missing_base`. Promote it with the reference update workflow and review the image.
 
-Case IDs are a hash of the parameters, so unchanged cases keep their folders and references.
+The case folder is `cases/TestCase_<feature>`. A feature that fails to build fails the run
+(the other features still run).
 
 ## Running locally (Linux)
 
@@ -37,7 +37,7 @@ Needs `xvfb`, ImageMagick (`compare`), Mesa and `gh`.
 scripts/fetch_binary.sh                       # downloads to bin/, prints source SHA
 git clone --filter=blob:none --no-checkout https://github.com/OPM/ResInsight.git testmodels
 (cd testmodels && git sparse-checkout set TestModels && git checkout <SHA>)
-pip install bin/rips-*.whl pyyaml
+pip install bin/rips-*.whl
 scripts/run_tests.sh [case-name-regex]
 ```
 

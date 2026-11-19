@@ -82,7 +82,7 @@ jobs:
         run: |
           python3 -m venv venv
           . venv/bin/activate
-          pip install bin/rips-*.whl pyyaml
+          pip install bin/rips-*.whl
           chmod +x scripts/*.sh
           scripts/run_tests.sh
         continue-on-error: true
