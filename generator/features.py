@@ -309,14 +309,22 @@ def well_path_from_points(project, case, view, testmodels):
     _hide_grid(view)
     _look_at_points(view, case, points, margin=1.5)
 
+def _fit_multi_plots(project, columns, rows):
+    """Use a page layout that matches the number of subplots, so the page has no empty cells."""
+    for multi_plot in project.descendants(rips.MultiSummaryPlot):
+        multi_plot.number_of_columns = columns
+        multi_plot.rows_per_page = rows
+        multi_plot.update()
+
+
 @feature("summary_plot")
 def summary_plot(project, case, view, testmodels):
     """Summary plot of the field oil production total (FOPT)."""
     view.delete()  # only the plot should be snapshotted
     summary_case = project.import_summary_case(str(testmodels / SUMMARY))
     collection = project.summary_plot_collection()
-    plot = collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
-    plot.update()
+    collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
+    _fit_multi_plots(project, rips.NumberOfColumns._1, rips.RowsPerPage._1)
 
 
 @feature("summary_multi_plot")
@@ -328,3 +336,5 @@ def summary_multi_plot(project, case, view, testmodels):
     collection.new_summary_multi_plot(
         summary_cases=[summary_case], addresses=["FOPT", "FWPT"]
     )
+    _fit_multi_plots(project, rips.NumberOfColumns._2, rips.RowsPerPage._1)
+
