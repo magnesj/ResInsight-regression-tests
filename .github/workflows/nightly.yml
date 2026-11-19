@@ -11,7 +11,7 @@ on:
         default: false
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
   issues: write
@@ -111,11 +111,32 @@ jobs:
             cases/*/RegTestGeneratedImages/
           retention-days: 30
 
-      - name: Publish report to GitHub Pages
+      - name: Archive report on the reports branch (kept for 30 days)
+        if: steps.tested.outputs.cache-hit != 'true' || inputs.force
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          url="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code --heads "$url" reports >/dev/null 2>&1; then
+            git clone --depth 1 -b reports "$url" site
+          else
+            git init -b reports site
+            git -C site remote add origin "$url"
+          fi
+          python3 scripts/archive_report.py --site site --report report --results results.json \
+            --run-id "${{ github.run_id }}" --sha "${{ steps.sha.outputs.sha }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --outcome "${{ steps.run.outcome }}"
+          cd site
+          git add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com \
+            commit -m "Report for run ${{ github.run_id }}"
+          git push origin reports
+
+      - name: Publish reports to GitHub Pages
         if: steps.tested.outputs.cache-hit != 'true' || inputs.force
         uses: actions/upload-pages-artifact@v5
         with:
-          path: report
+          path: site
 
       - name: Update nightly issue
         if: steps.tested.outputs.cache-hit != 'true' || inputs.force
