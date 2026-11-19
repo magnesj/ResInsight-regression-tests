@@ -102,6 +102,16 @@ def _hide_grid(view):
     cell_range.update()
 
 
+def _read_dev_points(path):
+    # Well path files list x, y, depth and md after a name line
+    points = []
+    for line in path.read_text().splitlines()[1:]:
+        values = line.split()
+        if len(values) >= 3:
+            points.append((float(values[0]), float(values[1]), -float(values[2])))
+    return points
+
+
 def _intersect_well(view, well_path):
     collection = view.descendants(rips.IntersectionCollection)[0]
     intersection = collection.add_new_object(rips.CurveIntersection)
@@ -231,7 +241,7 @@ def well_path_import(project, case, view, testmodels):
     project.import_well_paths([str(testmodels / TEST10K_WELLPATH)])
     well_path = project.well_paths()[0]
     _intersect_well(view, well_path)
-    _look_at_grid(view, case)
+    _look_at_points(view, case, _read_dev_points(testmodels / TEST10K_WELLPATH), margin=1.5)
 
 
 @feature("modeled_well_path", TEST10K)
@@ -250,8 +260,7 @@ def modeled_well_path(project, case, view, testmodels):
     geometry.append_well_target([600, 400, 120])
     geometry.update()
     _hide_grid(view)
-    _intersect_well(view, well_path)
-    _look_at_grid(view, case)
+    _look_at_points(view, case, _read_dev_points(testmodels / TEST10K_WELLPATH), margin=1.5)
 
 
 @feature("well_path_from_points", TEST10K)
@@ -266,5 +275,4 @@ def well_path_from_points(project, case, view, testmodels):
         name="Point well", coordinates=points
     )
     _hide_grid(view)
-    _intersect_well(view, well_path)
-    _look_at_points(view, case, points)
+    _look_at_points(view, case, points, margin=1.5)
