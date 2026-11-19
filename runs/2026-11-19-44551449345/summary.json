@@ -1,0 +1,9 @@
+{
+  "name": "2026-11-19-44551449345",
+  "time": "2026-11-19 15:10 UTC",
+  "sha": "cde20235",
+  "run_url": "https://github.com/magnesj/ResInsight-regression-tests/actions/runs/44551449345",
+  "outcome": "failure",
+  "passed": 14,
+  "total": 16
+}
