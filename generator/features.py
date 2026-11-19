@@ -317,6 +317,7 @@ def summary_plot(project, case, view, testmodels):
     collection = project.summary_plot_collection()
     plot = collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
     plot.update()
+    plot.export_snapshot(export_folder="/tmp/dbg", prefix="rips_", width=1000, height=745)
 
 
 @feature("summary_multi_plot")
