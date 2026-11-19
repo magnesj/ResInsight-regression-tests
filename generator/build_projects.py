@@ -37,6 +37,21 @@ def build_case(resinsight, name, testmodels):
     view = case.create_view()
     build(project, case, view, testmodels)
     project.save(str(rsp))
+    _enable_time_axis_auto_zoom(rsp)
+
+
+def _enable_time_axis_auto_zoom(rsp: Path):
+    """The hidden plot widget turns off auto zoom of the time axis while laying out the plot, which saves an
+    empty time range and gives plots without time axis and curves. Restore auto zoom in the saved project."""
+    text = rsp.read_text()
+    fixed = re.sub(
+        r"(<SummaryTimeAxisProperties>.*?<AutoZoom>)False( ?</AutoZoom>)",
+        r"\1True\2",
+        text,
+        flags=re.DOTALL,
+    )
+    if fixed != text:
+        rsp.write_text(fixed)
 
 
 def main():
