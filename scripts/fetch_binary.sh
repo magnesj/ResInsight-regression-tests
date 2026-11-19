@@ -22,5 +22,5 @@ echo "$sha" > bin/SOURCE_SHA
 
 rm -rf bin/ResInsight
 unzip -q bin/ResInsight-Ubuntu.zip -d bin/ResInsight
-chmod +x bin/ResInsight/ResInsight 2>/dev/null || true
+chmod +x bin/ResInsight/bin/ResInsight 2>/dev/null || true
 echo "$sha"

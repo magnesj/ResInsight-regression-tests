@@ -4,7 +4,7 @@
 set -euo pipefail
 
 export LIBGL_ALWAYS_SOFTWARE=1
-export RESINSIGHT_EXECUTABLE="$PWD/bin/ResInsight/ResInsight"
+export RESINSIGHT_EXECUTABLE="$PWD/bin/ResInsight/bin/ResInsight"
 FILTER="${1:-}"
 
 # Generated .rsp files embed absolute TestModels paths
