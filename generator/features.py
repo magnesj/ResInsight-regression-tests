@@ -315,6 +315,11 @@ def _fit_multi_plots(project, columns, rows):
         multi_plot.number_of_columns = columns
         multi_plot.rows_per_page = rows
         multi_plot.update()
+    # The hidden plot widget disables auto zoom of the time axis while it is laid out, which leaves an empty time range
+    for item in project.descendants(rips.PdmObjectBase):
+        if item.pb2_object().class_keyword == "SummaryTimeAxisProperties":
+            item.set_value("auto_zoom", True)
+            item.update()
 
 
 @feature("summary_plot")
@@ -325,8 +330,6 @@ def summary_plot(project, case, view, testmodels):
     collection = project.summary_plot_collection()
     collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
     _fit_multi_plots(project, rips.NumberOfColumns._1, rips.RowsPerPage._1)
-    v = summary_case.summary_vector_values("FOPT").values
-    print("DBG", len(v), v[:3], v[-3:], max(v))
 
 
 @feature("summary_multi_plot")
