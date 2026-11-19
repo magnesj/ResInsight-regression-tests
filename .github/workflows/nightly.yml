@@ -30,7 +30,7 @@ jobs:
         run: |
           echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80retries
           # archive.ubuntu.com is unreliable from hosted runners; the Azure mirror is not
-          sed -i 's|http://\(archive\|security\)\.ubuntu\.com|http://azure.archive.ubuntu.com|' /etc/apt/sources.list.d/ubuntu.sources
+          sed -i -E 's#http://(archive|security)\.ubuntu\.com#http://azure.archive.ubuntu.com#' /etc/apt/sources.list.d/ubuntu.sources
           apt-get update
           apt-get install -y --no-install-recommends \
             git git-lfs gh unzip ca-certificates python3 python3-pip python3-venv \
