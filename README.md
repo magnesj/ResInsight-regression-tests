@@ -37,7 +37,7 @@ Needs `xvfb`, ImageMagick (`compare`), Mesa and `gh`.
 scripts/fetch_binary.sh                       # downloads to bin/, prints source SHA
 git clone --filter=blob:none --no-checkout https://github.com/OPM/ResInsight.git testmodels
 (cd testmodels && git sparse-checkout set TestModels && git checkout <SHA>)
-pip install bin/rips.whl pyyaml
+pip install bin/rips-*.whl pyyaml
 scripts/run_tests.sh [case-name-regex]
 ```
 
