@@ -308,3 +308,34 @@ def well_path_from_points(project, case, view, testmodels):
     )
     _hide_grid(view)
     _look_at_points(view, case, points, margin=1.5)
+
+@feature("summary_plot")
+def summary_plot(project, case, view, testmodels):
+    """Summary plot of the field oil production total (FOPT)."""
+    summary_case = project.import_summary_case(str(testmodels / SUMMARY))
+    collection = project.summary_plot_collection()
+    collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
+
+
+@feature("summary_multi_plot")
+def summary_multi_plot(project, case, view, testmodels):
+    """Multi plot with one summary plot per vector (FOPT, FWPT)."""
+    summary_case = project.import_summary_case(str(testmodels / SUMMARY))
+    collection = project.summary_plot_collection()
+    collection.new_summary_multi_plot(
+        summary_cases=[summary_case], addresses=["FOPT", "FWPT"]
+    )
+
+
+@feature("well_log_plot", TEST10K)
+def well_log_plot(project, case, view, testmodels):
+    """Well log plot of PRESSURE along an imported well path."""
+    project.import_well_paths([str(testmodels / TEST10K_WELLPATH)])
+    collection = project.descendants(rips.WellLogPlotCollection)[0]
+    collection.new_well_log_plot(
+        case=case,
+        well_path=project.well_paths()[0],
+        property_type="DYNAMIC_NATIVE",
+        property_name="PRESSURE",
+        time_step=0,
+    )
