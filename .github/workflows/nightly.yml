@@ -1,0 +1,150 @@
+name: Nightly regression
+
+on:
+  schedule:
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Run even if this source SHA was already tested
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  issues: write
+
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    # Pinned base image so runner image updates cannot change pixels.
+    # A deliberate Mesa/image bump means a deliberate reference refresh.
+    container: ubuntu:24.04
+    env:
+      GH_TOKEN: ${{ secrets.DEV_BUILDS_READ_TOKEN || github.token }}
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            git git-lfs gh unzip ca-certificates python3 python3-pip python3-venv \
+            xvfb xauth imagemagick libgl1-mesa-dri libglx-mesa0 libegl1 libxkbcommon-x11-0 \
+            libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-xkb1 libfontconfig1 \
+            libglu1-mesa libdbus-1-3 libnss3
+
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Find source SHA of dev-latest
+        id: sha
+        run: |
+          sha=$(gh release view dev-latest -R CeetronSolutions/resinsight-builds --json body -q .body \
+            | sed -n 's/^Built from OPM\/ResInsight@\([0-9a-f]*\).*/\1/p' | head -n1)
+          [ -n "$sha" ] || { echo "Could not parse source SHA"; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Check if this SHA was already tested
+        id: tested
+        uses: actions/cache/restore@v4
+        with:
+          path: .tested
+          key: tested-${{ steps.sha.outputs.sha }}
+          lookup-only: true
+
+      - name: Restore binary cache
+        if: steps.tested.outputs.cache-hit != 'true' || inputs.force
+        id: bincache
+        uses: actions/cache@v4
+        with:
+          path: bin
+          key: binary-${{ steps.sha.outputs.sha }}
+
+      - name: Download binary
+        if: (steps.tested.outputs.cache-hit != 'true' || inputs.force) && steps.bincache.outputs.cache-hit != 'true'
+        run: scripts/fetch_binary.sh
+
+      - name: Sparse checkout TestModels at the binary SHA
+        if: steps.tested.outputs.cache-hit != 'true' || inputs.force
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/OPM/ResInsight.git testmodels
+          cd testmodels
+          git sparse-checkout set TestModels
+          git checkout ${{ steps.sha.outputs.sha }}
+
+      - name: Install rips and run tests
+        id: run
+        if: steps.tested.outputs.cache-hit != 'true' || inputs.force
+        run: |
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install bin/rips.whl pyyaml
+          chmod +x scripts/*.sh
+          scripts/run_tests.sh
+        continue-on-error: true
+
+      - name: Build report
+        if: steps.tested.outputs.cache-hit != 'true' || inputs.force
+        run: |
+          python3 scripts/make_report.py --sha "${{ steps.sha.outputs.sha }}" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Upload report and generated images
+        if: steps.tested.outputs.cache-hit != 'true' || inputs.force
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-${{ steps.sha.outputs.sha }}
+          path: |
+            report/
+            results.json
+            run.log
+            cases/*/RegTestGeneratedImages/
+          retention-days: 30
+
+      - name: Publish report to GitHub Pages
+        if: steps.tested.outputs.cache-hit != 'true' || inputs.force
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: report
+
+      - name: Update nightly issue
+        if: steps.tested.outputs.cache-hit != 'true' || inputs.force
+        run: |
+          body="Source OPM/ResInsight@${{ steps.sha.outputs.sha }}
+          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          Result: ${{ steps.run.outcome }}"
+          number=$(gh issue list -l nightly-regression -s open --json number -q '.[0].number')
+          if [ -z "$number" ]; then
+            gh label create nightly-regression 2>/dev/null || true
+            gh issue create -t "Nightly regression" -l nightly-regression -b "$body"
+          else
+            gh issue comment "$number" -b "$body"
+          fi
+
+      - name: Remember tested SHA
+        if: (steps.tested.outputs.cache-hit != 'true' || inputs.force) && steps.run.outcome == 'success'
+        run: mkdir -p .tested && echo "${{ steps.sha.outputs.sha }}" > .tested/sha
+
+      - name: Save tested SHA
+        if: (steps.tested.outputs.cache-hit != 'true' || inputs.force) && steps.run.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: .tested
+          key: tested-${{ steps.sha.outputs.sha }}
+
+      - name: Fail on regression
+        if: steps.run.outcome == 'failure'
+        run: exit 1
+
+  deploy-pages:
+    needs: regression
+    if: always() && needs.regression.result != 'skipped'
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4

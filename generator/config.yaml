@@ -1,0 +1,24 @@
+# Parameter model for generated 3D view cases. Paths are relative to TestModels/.
+# Every pair of parameter values is covered by at least one case.
+snapshot:
+  width: 800
+  height: 600
+
+parameters:
+  model:
+    - NestedHybridGrid/DROGON_NESTED.EGRID
+    - TEST10K_FLT_LGR_NNC/TEST10K_FLT_LGR_NNC.EGRID
+    - dualporo-testcase/DUALPORO-WELL-COMPLETION-DEFAULT.EGRID
+    - spe1/SPE1CASE2.EGRID
+  result:
+    - none
+    - PRESSURE
+    - SWAT
+  grid_box:
+    - true
+    - false
+
+# Combinations that cannot be built. A rule matches when all listed values match.
+exclude:
+  - { model: spe1/SPE1CASE2.EGRID, result: PRESSURE }
+  - { model: spe1/SPE1CASE2.EGRID, result: SWAT }

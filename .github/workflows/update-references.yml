@@ -1,0 +1,66 @@
+name: Update references
+
+# Promotes the generated images of a nightly run to the reference images and opens a PR.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Nightly regression run ID to take generated images from
+        required: true
+      case_filter:
+        description: Regex on case names to update (empty = all cases in the run)
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Download artifacts of the run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ inputs.run_id }}" -D run-artifacts
+          cat run-artifacts/*/run.log >/dev/null 2>&1 || true
+
+      - name: Copy generated images into references
+        run: |
+          set -e
+          sha=$(ls run-artifacts | sed -n 's/^regression-//p' | head -n1)
+          echo "SOURCE_SHA=$sha" >> "$GITHUB_ENV"
+          for gen in run-artifacts/*/cases/*/RegTestGeneratedImages; do
+            name=$(basename "$(dirname "$gen")")
+            if [ -n "${{ inputs.case_filter }}" ] && ! [[ "$name" =~ ${{ inputs.case_filter }} ]]; then
+              continue
+            fi
+            [ -d "cases/$name" ] || continue
+            rm -rf "cases/$name/RegTestBaseImages"
+            mkdir -p "cases/$name/RegTestBaseImages"
+            cp "$gen"/*.png "cases/$name/RegTestBaseImages/"
+          done
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard cases)" ]; then
+            echo "No reference changes"
+            exit 0
+          fi
+          branch="update-references-${{ inputs.run_id }}"
+          git checkout -b "$branch"
+          git add cases
+          git commit -m "Update reference images from run ${{ inputs.run_id }}"
+          git push origin "$branch"
+          gh pr create --title "Update reference images (OPM/ResInsight@${SOURCE_SHA})" \
+            --body "Reference images taken from nightly run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ inputs.run_id }}, produced by OPM/ResInsight@${SOURCE_SHA}. Case filter: \`${{ inputs.case_filter }}\`. Review the before/after/diff images in the run report before merging."

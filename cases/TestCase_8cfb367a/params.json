@@ -1,0 +1,11 @@
+{
+  "snapshot": {
+    "width": 800,
+    "height": 600
+  },
+  "parameters": {
+    "model": "dualporo-testcase/DUALPORO-WELL-COMPLETION-DEFAULT.EGRID",
+    "result": "SWAT",
+    "grid_box": true
+  }
+}

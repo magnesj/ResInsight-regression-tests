@@ -1,0 +1,11 @@
+{
+  "snapshot": {
+    "width": 800,
+    "height": 600
+  },
+  "parameters": {
+    "model": "spe1/SPE1CASE2.EGRID",
+    "result": "none",
+    "grid_box": false
+  }
+}

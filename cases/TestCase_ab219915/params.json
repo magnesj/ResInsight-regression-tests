@@ -1,0 +1,11 @@
+{
+  "snapshot": {
+    "width": 800,
+    "height": 600
+  },
+  "parameters": {
+    "model": "TEST10K_FLT_LGR_NNC/TEST10K_FLT_LGR_NNC.EGRID",
+    "result": "PRESSURE",
+    "grid_box": true
+  }
+}
