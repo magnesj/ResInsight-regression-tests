@@ -31,6 +31,70 @@ def _show_pressure(view):
     view.update()
 
 
+def _look_at(view, target, direction, distance):
+    """Point the camera at target, looking along direction with world Z as up."""
+    d = _normalize(direction)
+    up = (0.0, 0.0, 1.0) if abs(d[2]) < 0.99 else (0.0, 1.0, 0.0)
+    dot = sum(u * c for u, c in zip(up, d))
+    y = _normalize([u - dot * c for u, c in zip(up, d)])
+    z = [-c for c in d]
+    x = [
+        y[1] * z[2] - y[2] * z[1],
+        y[2] * z[0] - y[0] * z[2],
+        y[0] * z[1] - y[1] * z[0],
+    ]
+    eye = [t - c * distance for t, c in zip(target, d)]
+    view.camera_matrix = [
+        x[0], y[0], z[0], eye[0],
+        x[1], y[1], z[1], eye[1],
+        x[2], y[2], z[2], eye[2],
+        0.0, 0.0, 0.0, 1.0,
+    ]
+    view.camera_point_of_interest = list(target)
+    view.update()
+
+
+def _normalize(v):
+    length = math.sqrt(sum(c * c for c in v))
+    return [c / length for c in v]
+
+
+def _look_at_points(view, points, direction=(0.0, 1.0, -0.6), margin=2.5):
+    xs, ys, zs = zip(*points)
+    target = ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (min(zs) + max(zs)) / 2)
+    extent = math.dist((min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs)))
+    _look_at(view, target, direction, max(extent, 100.0) * margin)
+
+
+def _look_at_grid(view, bbox, direction=(0.0, 1.0, -0.6)):
+    corners = [
+        (bbox.min_x, bbox.min_y, bbox.min_z),
+        (bbox.max_x, bbox.max_y, bbox.max_z),
+    ]
+    _look_at_points(view, corners, direction, margin=1.4)
+
+
+def _hide_grid(view):
+    # Keep a single corner cell so that only well paths and intersections remain visible
+    cell_filters = view.descendants(rips.CellFilterCollection)[0]
+    cell_range = cell_filters.add_new_object(rips.CellRangeFilter)
+    cell_range.start_index_i = 1
+    cell_range.start_index_j = 1
+    cell_range.start_index_k = 1
+    cell_range.cell_count_i = 1
+    cell_range.cell_count_j = 1
+    cell_range.cell_count_k = 1
+    cell_range.update()
+
+
+def _intersect_well(view, well_path):
+    collection = view.descendants(rips.IntersectionCollection)[0]
+    intersection = collection.add_new_object(rips.CurveIntersection)
+    intersection.type = "CS_WELL_PATH"
+    intersection.well_path = well_path
+    intersection.update()
+
+
 def _box_center(case):
     bbox = case.reservoir_boundingbox()
     return (
@@ -102,6 +166,7 @@ def intersection_polyline(project, case, view, testmodels):
         [bbox.max_x, bbox.max_y, z],
     ]
     intersection.update()
+    _look_at_grid(view, bbox, (0.3, 1.0, -0.5))
 
 
 @feature("regular_surface", TEST10K)
@@ -123,6 +188,7 @@ def regular_surface(project, case, view, testmodels):
     surface.rotation = 0.0
     surface.update()
     view.set_surface_visible(surface, True)
+    _look_at_grid(view, bbox)
 
 
 @feature("polygon", TEST10K)
@@ -148,6 +214,10 @@ def polygon(project, case, view, testmodels):
 def well_path_import(project, case, view, testmodels):
     _show_pressure(view)
     project.import_well_paths([str(testmodels / TEST10K_WELLPATH)])
+    well_path = project.well_paths()[0]
+    _hide_grid(view)
+    _intersect_well(view, well_path)
+    _look_at_grid(view, case.reservoir_boundingbox())
 
 
 @feature("modeled_well_path", TEST10K)
@@ -165,6 +235,9 @@ def modeled_well_path(project, case, view, testmodels):
     geometry.append_well_target([300, 200, 50])
     geometry.append_well_target([600, 400, 120])
     geometry.update()
+    _hide_grid(view)
+    _intersect_well(view, well_path)
+    _look_at_grid(view, case.reservoir_boundingbox())
 
 
 @feature("well_path_from_points", TEST10K)
@@ -175,4 +248,9 @@ def well_path_from_points(project, case, view, testmodels):
         [3736.0 + 30 * i, 4630.0 + 20 * i, -4130.0 - 10 * i + math.sin(i) * 5]
         for i in range(15)
     ]
-    collection.import_well_path_from_points(name="Point well", coordinates=points)
+    well_path = collection.import_well_path_from_points(
+        name="Point well", coordinates=points
+    )
+    _hide_grid(view)
+    _intersect_well(view, well_path)
+    _look_at_points(view, points)
