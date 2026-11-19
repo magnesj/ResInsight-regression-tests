@@ -113,7 +113,11 @@ jobs:
 
       - name: Update nightly issue
         if: steps.tested.outputs.cache-hit != 'true' || inputs.force
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           body="Source OPM/ResInsight@${{ steps.sha.outputs.sha }}
           Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           Result: ${{ steps.run.outcome }}"
