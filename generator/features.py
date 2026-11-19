@@ -326,8 +326,7 @@ def summary_plot(project, case, view, testmodels):
     collection.new_summary_plot(summary_cases=[summary_case], address="FOPT")
     _fit_multi_plots(project, rips.NumberOfColumns._1, rips.RowsPerPage._1)
     v = summary_case.summary_vector_values("FOPT").values
-    ts = summary_case.time_steps().values
-    print("DBG", len(v), v[:3], v[-3:], len(ts), ts[:2])
+    print("DBG", len(v), v[:3], v[-3:], max(v))
 
 
 @feature("summary_multi_plot")
