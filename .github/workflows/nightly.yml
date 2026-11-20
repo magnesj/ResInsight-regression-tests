@@ -18,10 +18,10 @@ permissions:
 
 jobs:
   regression:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # Pinned base image so runner image updates cannot change pixels.
     # A deliberate Mesa/image bump means a deliberate reference refresh.
-    container: ubuntu:24.04
+    container: ubuntu:26.04
     env:
       GH_TOKEN: ${{ secrets.DEV_BUILDS_READ_TOKEN || github.token }}
       DEBIAN_FRONTEND: noninteractive
@@ -174,7 +174,7 @@ jobs:
   deploy-pages:
     needs: regression
     if: always() && needs.regression.result != 'skipped'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment:
       name: github-pages
     steps:

@@ -48,7 +48,7 @@ Results are in `results.json`, `run.log` and `cases/*/RegTestGeneratedImages`.
 
 ## Nightly
 
-`nightly.yml` runs at 03:30 UTC in a pinned `ubuntu:24.04` container, skips when the SHA of
+`nightly.yml` runs at 03:30 UTC in a pinned `ubuntu:26.04` container, skips when the SHA of
 `dev-latest` was already tested successfully (or `force`), caches the binary per SHA, uploads
 report and generated images as an artifact, stores the report under `runs/` on the `reports` branch (reports older than 30 days are removed), publishes that branch to GitHub Pages and
 comments on the "Nightly regression" issue. The job fails when any image differs.
