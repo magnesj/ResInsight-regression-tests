@@ -1,9 +1,11 @@
 # ResInsight regression tests
 
-Nightly pixel-diff tests of ResInsight 3D views (2D plots are planned), using the
+Nightly pixel-diff tests of ResInsight 3D views and 2D summary plots, using the
 prebuilt `dev-latest` binary from `CeetronSolutions/resinsight-builds`, software
 rendering (Mesa llvmpipe under xvfb) and exact (0 pixel) comparison.
 See magnesj/ResInsight#1190.
+
+**Latest report:** https://magnesj.github.io/ResInsight-regression-tests/ (the last 30 days of nightly runs are listed there).
 
 ## Layout
 
