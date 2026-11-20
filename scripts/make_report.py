@@ -26,7 +26,7 @@ table.summary td, table.summary th { padding: 2px 10px; text-align: left; }
 .images figure { margin: 0; }
 .images img { border: 1px solid #aaa; }
 """
-CAPTIONS = {"diff": "diff (white = differing pixels)"}
+CAPTIONS = {"diff": "diff (red = differing pixels)"}
 ORDER = {"fail": 0, "missing_generated": 1, "no_images": 2, "missing_base": 3, "pass": 4}
 IMAGE_FOLDERS = (
     ("base", "RegTestBaseImages"),

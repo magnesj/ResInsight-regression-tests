@@ -1,7 +1,7 @@
 """Exact pixel comparison of RegTestGeneratedImages against RegTestBaseImages.
 
 Writes results.json and returns non-zero when any image differs or is missing.
-For each differing image a binary diff (white = differing pixel) is written to
+For each differing image a binary diff (red = differing pixel) is written to
 RegTestDiffImages, replacing the runner's diff image.Usage: python compare_results.py [--cases-dir cases] [--output results.json]
 """
 
@@ -25,14 +25,14 @@ def differing_pixels(base, generated):
 
 
 def write_binary_diff(base, generated, output):
-    """Write a black and white image where white pixels differ between the two images."""
+    """Write a black image where red pixels differ between the two images."""
     output.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
         [
             "convert", str(base), "-alpha", "off", str(generated), "-alpha", "off",
             "-compose", "difference", "-composite",
             "-separate", "-evaluate-sequence", "max",
-            "-threshold", "0", str(output),
+            "-threshold", "0", "+level-colors", "black,red", str(output),
         ],
         check=True,
     )
