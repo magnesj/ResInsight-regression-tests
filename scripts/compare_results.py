@@ -1,7 +1,8 @@
 """Exact pixel comparison of RegTestGeneratedImages against RegTestBaseImages.
 
 Writes results.json and returns non-zero when any image differs or is missing.
-Usage: python compare_results.py [--cases-dir cases] [--output results.json]
+For each differing image a binary diff (white = differing pixel) is written to
+RegTestDiffImages, replacing the runner's diff image.Usage: python compare_results.py [--cases-dir cases] [--output results.json]
 """
 
 import argparse
@@ -21,6 +22,20 @@ def differing_pixels(base, generated):
     if result.returncode == 2:
         return None
     return int(float(result.stderr.split()[0]))
+
+
+def write_binary_diff(base, generated, output):
+    """Write a black and white image where white pixels differ between the two images."""
+    output.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        [
+            "convert", str(base), "-alpha", "off", str(generated), "-alpha", "off",
+            "-compose", "difference", "-composite",
+            "-separate", "-evaluate-sequence", "max",
+            "-threshold", "0", str(output),
+        ],
+        check=True,
+    )
 
 
 def main():
@@ -43,6 +58,10 @@ def main():
             else:
                 pixels = differing_pixels(base[name], generated[name])
                 status = "pass" if pixels == 0 else "fail"
+                if pixels:
+                    write_binary_diff(
+                        base[name], generated[name], case / "RegTestDiffImages" / name
+                    )
             results.append(
                 {"case": case.name, "image": name, "status": status, "pixels": pixels}
             )
