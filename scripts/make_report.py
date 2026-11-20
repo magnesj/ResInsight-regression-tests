@@ -101,6 +101,7 @@ def main():
     sha = html.escape(args.sha)
     page = (
         f"<html><head><meta charset='utf-8'><style>{STYLE}</style></head><body>"
+        "<p><a href='../../index.html'>&larr; All nightly reports</a></p>"
         "<h1>ResInsight nightly regression</h1>"
         f"<p>Source: <a href='https://github.com/OPM/ResInsight/commit/{sha}'>"
         f"OPM/ResInsight@{sha}</a>{run} &middot; generated {now}</p>"
