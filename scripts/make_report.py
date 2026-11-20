@@ -26,6 +26,7 @@ table.summary td, table.summary th { padding: 2px 10px; text-align: left; }
 .images figure { margin: 0; }
 .images img { border: 1px solid #aaa; }
 """
+CAPTIONS = {"diff": "diff (white = differing pixels)"}
 ORDER = {"fail": 0, "missing_generated": 1, "no_images": 2, "missing_base": 3, "pass": 4}
 IMAGE_FOLDERS = (
     ("base", "RegTestBaseImages"),
@@ -53,7 +54,7 @@ def image_figures(result, cases_dir, output):
         shutil.copy(src, dest)
         name = html.escape(dest.name)
         figures.append(
-            f"<figure><figcaption>{label}</figcaption>"
+            f"<figure><figcaption>{CAPTIONS.get(label, label)}</figcaption>"
             f"<a href='{name}'><img src='{name}' width='320'></a></figure>"
         )
     return "".join(figures)
